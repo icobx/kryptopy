@@ -2,9 +2,7 @@ import os
 import timeit
 
 from Crypto.Cipher import AES
-from Crypto.Hash import SHA256
 from Crypto.Util import Counter
-
 from .utility.bcolors import bcolors
 
 

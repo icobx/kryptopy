@@ -1,7 +1,6 @@
-import timeit, os
+import timeit
 
 from Crypto.Cipher import AES
-from Crypto.PublicKey import RSA
 from Crypto import Random
 from Crypto.Util import Counter
 
@@ -17,9 +16,6 @@ def encrypt_file(in_filename, out_filename=None, key_file=None):
     nonce = Random.get_random_bytes(8)
     # Counter.new() creates counter function for AES in CTR mode to call and increment counter, nonce is prefix
     counter_func = Counter.new(64, nonce)
-
-    # encode key to utf-8, hash and slice it to fit 16 bytes
-    # hashed_key_16 = SHA256.new(key.encode('utf-8')).hexdigest()[:16]  # -> mame generovat nahodny key
 
     encryptor = AES.new(key, AES.MODE_CTR, counter=counter_func)
 
