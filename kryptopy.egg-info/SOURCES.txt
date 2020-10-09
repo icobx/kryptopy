@@ -6,4 +6,5 @@ kryptopy.egg-info/PKG-INFO
 kryptopy.egg-info/SOURCES.txt
 kryptopy.egg-info/dependency_links.txt
 kryptopy.egg-info/entry_points.txt
+kryptopy.egg-info/requires.txt
 kryptopy.egg-info/top_level.txt

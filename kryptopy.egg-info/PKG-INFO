@@ -1,10 +1,10 @@
 Metadata-Version: 1.0
 Name: kryptopy
 Version: 0.1.0
-Summary: UNKNOWN
-Home-page: UNKNOWN
-Author: UNKNOWN
-Author-email: UNKNOWN
-License: UNKNOWN
+Summary: Simple tool for file encryption/decryption.
+Home-page: https://github.com/icobx/kryptopy
+Author: icobx
+Author-email: jakub.fedorko@icloud.com
+License: MIT
 Description: UNKNOWN
 Platform: UNKNOWN
