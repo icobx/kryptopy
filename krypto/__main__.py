@@ -1,10 +1,10 @@
-import argparse, sys
+import argparse
 
 from krypto.encrypt_file import encrypt_file
 from krypto.decrypt_file import decrypt_file
 
-from krypto.utility.validation import valid_key, validate_infile
-from krypto.utility.bcolors import bcolors
+from utility.validation import valid_key, validate_infile
+from utility.bcolors import bcolors
 
 
 def main():

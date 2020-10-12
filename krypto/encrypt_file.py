@@ -4,8 +4,8 @@ from Crypto.Cipher import AES
 from Crypto import Random
 from Crypto.Util import Counter
 
-from .utility.bcolors import bcolors
-from .utility.validation import get_filename
+from utility.bcolors import bcolors
+from utility.validation import get_filename
 
 
 def encrypt_file(in_filename, key_file, out_filename):
@@ -39,8 +39,6 @@ def encrypt_file(in_filename, key_file, out_filename):
                     break
 
                 outfile.write(encryptor.encrypt(chunk))
-
-            # TODO: osetrit ak uz existuje file s takym nazvom
 
             k_file = get_filename(key_file)
             with open(k_file, 'wb') as keyfile:

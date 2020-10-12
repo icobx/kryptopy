@@ -3,8 +3,8 @@ import timeit
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 
-from .utility.bcolors import bcolors
-from .utility.validation import get_filename
+from utility.bcolors import bcolors
+from utility.validation import get_filename
 
 
 def decrypt_file(in_filename, key_filename, out_filename):

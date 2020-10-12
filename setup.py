@@ -1,18 +1,22 @@
 import setuptools
 
+with open('README.md', 'r') as fh:
+    long_description = fh.read()
+
 setuptools.setup(
-    name='kryptopy-pkg-icobx',
-    version='0.1.0',
+    name='kryptopy',
+    version='0.0.6',
     description='Simple tool for file encryption/decryption.',
+    long_description=long_description,
     url='https://github.com/icobx/kryptopy',
     author='icobx',
     author_email='jakub.fedorko@icloud.com',
     license='MIT',
-    packages=['krypto'],
-    install_requires=setuptools.find_packages(),
+    packages=['krypto', 'utility'],
+    install_requires='pycryptodome >= 3.9.8',
     entry_points={
         'console_scripts': [
-            'kryptopy = main:main'
+            'kryptopy = krypto.__main__:main'
         ]},
     classifiers=[
         "Programming Language :: Python :: 3",
