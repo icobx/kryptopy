@@ -1,6 +1,5 @@
 # kryptopy
 
-
 **Simple tool for file encryption / decryption.**
 
 Done as an assignment #2 for [I-UPB](https://is.stuba.sk/katalog/syllabus.pl?predmet=282080;lang=en) course (FEI STU).
@@ -17,7 +16,7 @@ Done as an assignment #2 for [I-UPB](https://is.stuba.sk/katalog/syllabus.pl?pre
     
 - **Installation**
     - `pip install kryptopy-x-py3-none-any.whl` or `kryptopy-x.tar.gz`
-    - current version: `x = 0.0.5`
+    - current version: `x = 0.0.6`
     
     
 ## Detailed Usage:
