@@ -20,8 +20,8 @@ def encrypt_file(in_filename, key_file, out_filename):
     encryptor = AES.new(key, AES.MODE_CTR, counter=counter_func)
 
     with open(in_filename, 'rb') as infile:
-        o_file = get_filename(out_filename)
 
+        o_file = get_filename(out_filename)
         with open(o_file, 'wb') as outfile:
             print(
                 f'{bcolors.BOLD}Encrypting file{bcolors.WARNING} '

@@ -1,4 +1,4 @@
-import argparse
+import argparse, timeit
 
 from krypto.encrypt_file import encrypt_file
 from krypto.decrypt_file import decrypt_file
@@ -35,6 +35,21 @@ def main():
         return
 
     encrypt_file(args.infile, args.keyfile, args.outfile)
+
+
+# def test():
+#     time_data = []
+#     for i in range(100):
+#         start = timeit.default_timer()
+#         decrypt_file('/Users/icobx/Documents/upb/zadanie2/kryptopy/tf_1b_enc', '/Users/icobx/Documents/upb/zadanie2/kryptopy/tkf', '/Users/icobx/Documents/upb/zadanie2/kryptopy/tf_1b_dec')
+#         end = timeit.default_timer()
+#         time_data.append(end - start)
+#
+#     sum = 0
+#     for n in time_data:
+#         sum += n
+#
+#     print(sum / len(time_data))
 
 
 if __name__ == '__main__':
