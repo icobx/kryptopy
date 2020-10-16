@@ -38,6 +38,9 @@ def validate_infile(infile):
 
 
 def get_filename(file):
+    # if not file:
+    #     return None
+
     path = os.path.expanduser(file)
 
     if not os.path.exists(path):
@@ -45,6 +48,9 @@ def get_filename(file):
 
     root, ext = os.path.splitext(os.path.expanduser(path))
     fdir = os.path.dirname(root)
+    if not fdir:
+        fdir = './'
+
     fname = os.path.basename(root)
     candidate = fname + ext
     index = 0
