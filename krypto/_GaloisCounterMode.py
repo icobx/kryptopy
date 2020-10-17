@@ -1,6 +1,5 @@
-import os, csv, timeit
+import os, timeit
 
-from base64 import b64encode
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto import Random
@@ -10,13 +9,13 @@ from utility.validation import get_filename
 
 
 class _GaloisCounterMode:
+    CHUNK_SIZE = 64 * 1024
+
     def __init__(self):
         pass
 
-    def test(self):
-        print('test_gcm')
 
-    def generate_rsa_key(self, private_keyfile, keyfile_pub, pass_phrase=None, size=2048):
+    def generate_rsa_key_pair(self, private_keyfile, public_keyfile, pass_phrase=None, size=2048):
         # private_keyfile - file where private key will be stored
         # keyfile_pub - file where public key will be stored
 
@@ -26,50 +25,38 @@ class _GaloisCounterMode:
         with open(key_file_priv, 'wb') as priv:
             priv.write(key.export_key(passphrase=pass_phrase))
 
-        key_file_pub = get_filename(keyfile_pub)
+        key_file_pub = get_filename(public_keyfile)
         with open(key_file_pub, 'wb') as pub:
-            pub.write(key.publickey().exportKey())
+            pub.write(key.publickey().export_key())
 
-    def encrypt_with_rsa(self, public_key, symmetric_key, symmetric_key_enc=None):
+    def encrypt_with_rsa(self, symmetric_key, public_key, symmetric_key_enc=None):
         with open(public_key, 'rb') as pub:
-
             pub_key = RSA.import_key(pub.read())
 
             rsa_cipher = PKCS1_OAEP.new(pub_key)
 
             sym_key_enc = rsa_cipher.encrypt(symmetric_key)
-            print(len(sym_key_enc))
 
             if not symmetric_key_enc:
                 return sym_key_enc
 
-            # keby chcem ten kluc do file-u
-            # with open(symmetric_key, 'rb') as sym: sym.read()
-            # only temp for checking
+            # TODO: to file
 
-    def decrypt_with_rsa(self, private_key, encrypted_sym_key, symmetric_key_dec=None):
+    def decrypt_with_rsa(self, encrypted_sym_key, private_key, symmetric_key_dec=None):
         with open(private_key, 'rb') as priv:
-            test1 = priv.read()
-            print(test1, '\n')
-            print(len(encrypted_sym_key))
-            priv_key = RSA.import_key(test1) #priv.read()
+            priv_key = RSA.import_key(priv.read())
 
             rsa_cipher = PKCS1_OAEP.new(priv_key)
 
+            sym_key_dec = rsa_cipher.decrypt(encrypted_sym_key)
+
             if not symmetric_key_dec:
-                return rsa_cipher.decrypt(encrypted_sym_key)
+                return sym_key_dec
 
-            # with open(encrypted_sym_key, 'rb') as e_sym:
-            #     enc_sym_key = e_sym.read()
-            #
-            #     rsa_cipher = PKCS1_OAEP.new(priv_key)
-            #
-            #     sym_key = rsa_cipher.decrypt(enc_sym_key)
-            #
-            #     return sym_key
+            # TODO: to file
 
-    # out_file format: [ nonce (12) | sym_key_enc (256) | encrypted_data (sizeof(data)) | tag (16) ]
-    def encrypt_file(self, public_key, in_filename, out_filename):
+    # out_file format: [ nonce (12) | sym_key_enc (256) | encrypted_data (len(data)) | tag (16) ]
+    def encrypt_file(self, in_filename, public_key, out_filename):
         # create 128 bit key for symmetric cipher
         sym_key = Random.get_random_bytes(16)
         # create 96 byt nonce for symmetric cipher
@@ -78,37 +65,24 @@ class _GaloisCounterMode:
         cipher = AES.new(sym_key, AES.MODE_GCM, nonce=nonce)
         # encrypt sym_key with asym cipher (RSA)
         sym_key_enc = self.encrypt_with_rsa(public_key, sym_key)
-        # vytvor header = [nonce, zasifrovany key]
-        # auth_data = nonce + sym_key_enc
-        # cipher.update(auth_data)
-        cipher.update(nonce + sym_key_enc)
-        # zasifruj data
+
+        ad = nonce + sym_key_enc
+        cipher.update(ad)   # --> include in tag
+
         with open(in_filename, 'rb') as infile:
             o_filename = get_filename(out_filename)
             with open(o_filename, 'wb') as outfile:
-                print(
-                    f'{bcolors.BOLD}Encrypting file{bcolors.WARNING} '
-                    f'{in_filename}{bcolors.ENDC + bcolors.BOLD} ...{bcolors.ENDC}'
-                )
-                # csv_writer = csv.writer(outfile)
-                #
-                # row = [b64encode(nonce).decode('utf-8'), b64encode(sym_key_enc).decode('utf-8'), None, None]
-                # csv_writer.writerow(row)
-                outfile.write(nonce)
-                outfile.write(sym_key_enc)
-                # vypis
-                chunk_size = 64 * 1024
+                print(f'{bcolors.BOLD}Encrypting file {in_filename} ...{bcolors.ENDC}')
 
-                # outfile.write()
+                outfile.write(ad)
+
                 start = timeit.default_timer()
+
                 while True:
-                    chunk = infile.read(chunk_size)
+                    chunk = infile.read(self.CHUNK_SIZE)
                     if len(chunk) == 0:
                         break
-
                     outfile.write(cipher.encrypt(chunk))
-                    # row = [None, None, b64encode(cipher.encrypt(chunk)).decode('utf-8'), None]
-                    # csv_writer.writerow(row)
 
                 outfile.write(cipher.digest())
 
@@ -117,10 +91,9 @@ class _GaloisCounterMode:
                     f'{bcolors.BOLD}Decryption {bcolors.OKGREEN}complete'
                     f'{bcolors.ENDC + bcolors.BOLD}. Time elapsed: {end - start} seconds{bcolors.ENDC}'
                 )
-            #vypis
 
-    def decrypt_file(self, private_key, in_filename, out_filename):
-
+    # in_file format: [ nonce (12) | sym_key_enc (256) | encrypted_data (len(data)) | tag (16) ]
+    def decrypt_file(self, in_filename, private_key, out_filename):
         with open(in_filename, 'rb+') as infile:
             nonce = infile.read(12)
             sym_key_enc = infile.read(256)
@@ -132,46 +105,64 @@ class _GaloisCounterMode:
 
             o_filename = get_filename(out_filename)
             with open(o_filename, 'wb') as outfile:
-                print(
-                    f'{bcolors.BOLD}Decrypting cipher{bcolors.WARNING} '
-                    f'{in_filename}{bcolors.ENDC + bcolors.BOLD} ...{bcolors.ENDC}'
-                )
-                chunk_size = 64 * 1024
+                print(f'{bcolors.BOLD}Decrypting ciphertext {in_filename} ...{bcolors.ENDC}')
+
                 start = timeit.default_timer()
 
+                # find tag position in file
                 infile.seek(-16, os.SEEK_END)
+                # read tag
                 tag = infile.read()
+                # find tag position again
                 infile.seek(-16, os.SEEK_END)
+                # remove tag from file
                 infile.truncate()
+                # find encrypted_data position
                 infile.seek(268)
 
                 while True:
-                    chunk = infile.read(chunk_size)
+                    chunk = infile.read(self.CHUNK_SIZE)
                     if len(chunk) == 0:
                         break
                     outfile.write(cipher.decrypt(chunk))
+
+                # write tag back to the end of file in case it needs to be encrypted
                 infile.write(tag)
-                try:
-                    cipher.verify(tag)
-                except ValueError as ve:
-                    print(ve)
-                    return
 
                 end = timeit.default_timer()
+
+                try:
+                    cipher.verify(tag)  # verify data integrity
+
+                except ValueError as ve:
+                    print(f'{bcolors.FAIL + bcolors.BOLD}{ve}. File could have been tampered with.{bcolors.ENDC}')
+
+                    user_input = input(
+                        f'Would you like to keep decrypted file anyway? '
+                        f'{bcolors.BOLD}(Y/n){bcolors.ENDC}: '
+                    )
+                    user_input = user_input[0].lower() if len(user_input) else 'y'
+
+                    response = 'File truncated.'
+                    if 'y' in user_input:
+                        print(f'{bcolors.WARNING + bcolors.BOLD}Keeping unverified file.{bcolors.ENDC}')
+                        return
+                    elif 'n' not in user_input:
+                        response = 'Ambiguous input. ' + response
+
+                    outfile.close()
+                    os.remove(o_filename)
+                    print(response)
+                    return
+
                 print(
                     f'{bcolors.BOLD}Decryption {bcolors.OKGREEN}complete'
                     f'{bcolors.ENDC + bcolors.BOLD}. Time elapsed: {end - start} seconds{bcolors.ENDC}'
                 )
-        #     outfile.seek(-16, os.SEEK_END)
 
-    def fuck_up_file(self, infile):
+    # method for tampering with encrypted file
+    def fuck_up_file(self, infile, byte_string=b'\x35'):
         with open(infile, 'rb+') as file:
             file.seek(269)
-            c = file.read(1)
-            print(c)
-            c = b'\x35'
-            file.seek(-1, 1)
-            file.write(c)
-            file.seek(-1, 1)
-            print(file.read(1))
+            file.write(byte_string)
             file.close()
