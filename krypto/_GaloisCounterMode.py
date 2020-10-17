@@ -5,11 +5,13 @@ from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto import Random
 
 from utility.bcolors import bcolors
-from utility.validation import get_filename
+from utility.validation import get_filename, validate_exists_file
 
 
 class _GaloisCounterMode:
     CHUNK_SIZE = 64 * 1024
+    STYLE = bcolors.OKGREEN+bcolors.BOLD
+    END_S = bcolors.ENDC
 
     def __init__(self):
         pass
@@ -18,7 +20,6 @@ class _GaloisCounterMode:
     def generate_rsa_key_pair(self, private_keyfile, public_keyfile, pass_phrase=None, size=2048):
         # private_keyfile - file where private key will be stored
         # keyfile_pub - file where public key will be stored
-
         key = RSA.generate(size)
 
         key_file_priv = get_filename(private_keyfile)
@@ -29,42 +30,56 @@ class _GaloisCounterMode:
         with open(key_file_pub, 'wb') as pub:
             pub.write(key.publickey().export_key())
 
-    def encrypt_with_rsa(self, symmetric_key, public_key, symmetric_key_enc=None):
+        print(f'New RSA key-pair generated: '
+              f'< {self.STYLE}{key_file_priv}{bcolors.ENDC} '
+              f'| {self.STYLE}{key_file_pub}{bcolors.ENDC}  >')
+
+    def encrypt_with_rsa(self, in_filename, public_key, out_filename=None):
+
         with open(public_key, 'rb') as pub:
             pub_key = RSA.import_key(pub.read())
 
             rsa_cipher = PKCS1_OAEP.new(pub_key)
 
-            sym_key_enc = rsa_cipher.encrypt(symmetric_key)
+            infile_enc = rsa_cipher.encrypt(in_filename)
 
-            if not symmetric_key_enc:
-                return sym_key_enc
+            if not out_filename:
+                return infile_enc
 
-            # TODO: to file
+            outfile_name = get_filename(out_filename)
 
-    def decrypt_with_rsa(self, encrypted_sym_key, private_key, symmetric_key_dec=None):
+            with open(outfile_name, 'wb') as outfile:
+                outfile.write(infile_enc)
+                print(f'Encrypted message stored in {self.STYLE}{outfile_name}.')
+
+    def decrypt_with_rsa(self, in_filename, private_key, out_filename=None):
+
         with open(private_key, 'rb') as priv:
             priv_key = RSA.import_key(priv.read())
 
             rsa_cipher = PKCS1_OAEP.new(priv_key)
 
-            sym_key_dec = rsa_cipher.decrypt(encrypted_sym_key)
+            infile_dec = rsa_cipher.decrypt(in_filename)
 
-            if not symmetric_key_dec:
-                return sym_key_dec
+            if not out_filename:
+                return infile_dec
 
-            # TODO: to file
+            outfile_name = get_filename(out_filename)
+
+            with open(outfile_name, 'wb') as outfile:
+                outfile.write(infile_dec)
+                print(f'Decrypted message stored in {self.STYLE}{outfile_name}.')
 
     # out_file format: [ nonce (12) | sym_key_enc (256) | encrypted_data (len(data)) | tag (16) ]
     def encrypt_file(self, in_filename, public_key, out_filename):
-        # create 128 bit key for symmetric cipher
-        sym_key = Random.get_random_bytes(16)
         # create 96 byt nonce for symmetric cipher
         nonce = Random.get_random_bytes(12)
+        # create 128 bit key for symmetric cipher
+        sym_key = Random.get_random_bytes(16)
         # create symmetric cipher
         cipher = AES.new(sym_key, AES.MODE_GCM, nonce=nonce)
         # encrypt sym_key with asym cipher (RSA)
-        sym_key_enc = self.encrypt_with_rsa(public_key, sym_key)
+        sym_key_enc = self.encrypt_with_rsa(sym_key, public_key)
 
         ad = nonce + sym_key_enc
         cipher.update(ad)   # --> include in tag
@@ -88,7 +103,7 @@ class _GaloisCounterMode:
 
                 end = timeit.default_timer()
                 print(
-                    f'{bcolors.BOLD}Decryption {bcolors.OKGREEN}complete'
+                    f'{bcolors.BOLD}Encryption {bcolors.OKGREEN}complete'
                     f'{bcolors.ENDC + bcolors.BOLD}. Time elapsed: {end - start} seconds{bcolors.ENDC}'
                 )
 
@@ -98,7 +113,7 @@ class _GaloisCounterMode:
             nonce = infile.read(12)
             sym_key_enc = infile.read(256)
 
-            sym_key = self.decrypt_with_rsa(private_key, sym_key_enc)
+            sym_key = self.decrypt_with_rsa(sym_key_enc, private_key)
 
             cipher = AES.new(sym_key, AES.MODE_GCM, nonce=nonce)
             cipher.update(nonce + sym_key_enc)
@@ -161,8 +176,7 @@ class _GaloisCounterMode:
                 )
 
     # method for tampering with encrypted file
-    def fuck_up_file(self, infile, byte_string=b'\x35'):
+    def fuck_up_file(self, infile, byte_string=b'\x35', position=268):
         with open(infile, 'rb+') as file:
-            file.seek(269)
+            file.seek(position)
             file.write(byte_string)
-            file.close()

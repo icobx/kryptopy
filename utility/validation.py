@@ -2,41 +2,39 @@ import os, argparse
 
 from .bcolors import bcolors
 
-style = bcolors.FAIL + bcolors.UNDERLINE
+style = bcolors.FAIL + bcolors.BOLD
 
 
-def valid_key(keyfile):
-    try:
-        if os.path.isdir(keyfile):
-            raise argparse.ArgumentTypeError(
-                f'{style}{keyfile} is directory but must be file{bcolors.ENDC}'
+def validate_sym_key(keyfile):
+    # if os.path.isdir(keyfile):
+    #     raise IsADirectoryError(
+    #         f'{style}<{keyfile}>: is directory but must be file: {bcolors.ENDC}'
+    #     )
+
+    status = os.stat(keyfile)
+    if status.st_size != 16:
+        raise argparse.ArgumentTypeError(
+            f'{style}<{keyfile}>: is not valid key{bcolors.ENDC}'
+        )
+        # print(f'{style}<{fnfe.filename}>: no such file{bcolors.ENDC}')
+
+# def validate_rsa_key(keyfile):
+
+
+
+def validate_exists_file(*args):
+    for infile in args:
+        if not os.path.exists(infile):
+            raise FileNotFoundError(
+                f'{style}<{infile}>: no such file{bcolors.ENDC}'
             )
 
-        status = os.stat(keyfile)
-        if status.st_size != 16:
-            raise argparse.ArgumentTypeError(
-                f'{style}{keyfile} is not valid key{bcolors.ENDC}'
+        elif os.path.isdir(infile):
+            raise IsADirectoryError(
+                f'{style}<{infile}>: is directory but must be file{bcolors.ENDC}'
             )
-    except FileNotFoundError:
-        raise argparse.ArgumentTypeError(
-            f'{style}{keyfile} was not found{bcolors.ENDC}'
-        )
 
-    return True
-
-
-def validate_infile(infile):
-    if not os.path.exists(infile):
-        raise argparse.ArgumentTypeError(
-            f'{style}{infile} does not exist{bcolors.ENDC}'
-        )
-
-    elif os.path.isdir(infile):
-        raise argparse.ArgumentTypeError(
-            f'{style}{infile} is directory but must be file{bcolors.ENDC}'
-        )
-
-
+# from stack overflow
 def get_filename(file):
     # if not file:
     #     return None

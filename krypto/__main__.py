@@ -1,15 +1,14 @@
 import argparse, timeit
 
-from krypto.encrypt_file import encrypt_file
-from krypto.decrypt_file import decrypt_file
 from krypto._CounterMode import _CounterMode
 from krypto._GaloisCounterMode import _GaloisCounterMode
 
-from utility.validation import valid_key, validate_infile
+from utility.validation import validate_sym_key, validate_exists_file
 from utility.bcolors import bcolors
 
 
 def main():
+    # test()
     parser = argparse.ArgumentParser(
         description=f'{bcolors.BOLD}Simple tool for file encryption/decryption.{bcolors.ENDC}'
     )
@@ -68,50 +67,71 @@ def main():
     modes_group.add_argument('-C', '--Counter', action='store_true', default=False,
                         help='AES-CTR mode without integrity validation and asymmetric encryption.')
 
-    # todo: move validations to methods that need them
-    print(parser.print_help())
+    args = parser.parse_args()
 
-    # todo: uncomment, only commented because was not tested
-    # args = parser.parse_args()
-    # if args.Counter:
-    #     validate_infile(args.infile)
-    #     mode = _CounterMode()
-    #
-    #     if args.decrypt and valid_key(args.keyfile):
-    #         mode.decrypt_file(args.infile, args.keyfile, args.outfile)
-    #         return
-    #
-    #     mode.encrypt_file(args.infile, args.keyfile, args.outfile)
-    #
-    # else:
-    #     mode = _GaloisCounterMode()
-    #
-    #     if args.generate:
-    #         mode.generate_rsa_key_pair(args.infile, args.keyfile)
-    #
-    #     else:
-    #         validate_infile(args.infile)
-    #
-    #         if args.asymmetric:
-    #             if args.decrypt:
-    #                 mode.decrypt_with_rsa(args.infile, args.keyfile, args.outfile)
-    #             else:
-    #                 mode.encrypt_with_rsa(args.infile, args.keyfile, args.outfile)
-    #             return
-    #
-    #         if args.decrypt:
-    #             mode.decrypt_file(args.infile, args.keyfile, args.outfile)
-    #             return
-    #
-    #         mode.encrypt_file(args.infile, args.keyfile, args.outfile)
+    if args.Counter:
+        try:
+            validate_exists_file(args.infile, args.keyfile)
+        except argparse.ArgumentTypeError as ate:
+            print(ate)
+            return
 
+        mode = _CounterMode()
 
+        if args.decrypt:
+            try:
+                validate_sym_key(args.keyfile)
+            except FileNotFoundError or IsADirectoryError or argparse.ArgumentTypeError as e:
+                if type(e) is FileNotFoundError:
+                    print(
+                        f'{bcolors.FAIL+bcolors.BOLD}<{e.filename}>: no such file{bcolors.ENDC}'
+                    )
+                else:
+                    print(e.strerror)
+                return
+
+            mode.decrypt_file(args.infile, args.keyfile, args.outfile)
+            return
+
+        mode.encrypt_file(args.infile, args.keyfile, args.outfile)
+
+    else:
+        mode = _GaloisCounterMode()
+
+        if args.generate:
+            mode.generate_rsa_key_pair(args.infile, args.keyfile)
+
+        else:
+            try:
+                validate_exists_file(args.infile, args.keyfile)
+            except argparse.ArgumentTypeError as ate:
+                print(ate)
+                return
+
+            try:
+                if args.asymmetric:
+                    if args.decrypt:
+                        mode.decrypt_with_rsa(args.infile, args.keyfile, args.outfile)
+                    else:
+                        mode.encrypt_with_rsa(args.infile, args.keyfile, args.outfile)
+                    return
+
+                if args.decrypt:
+                    mode.decrypt_file(args.infile, args.keyfile, args.outfile)
+                    return
+
+                mode.encrypt_file(args.infile, args.keyfile, args.outfile)
+            except ValueError or IndexError or TypeError as e:
+                print(f'{bcolors.FAIL+bcolors.BOLD}{e}{bcolors.ENDC}')
+    # parser.print_help()
+    # print(args)
 
 # def test():
 #     time_data = []
+#     mode = _GaloisCounterMode()
 #     for i in range(100):
 #         start = timeit.default_timer()
-#         decrypt_file('/Users/icobx/Documents/upb/zadanie2/kryptopy/tf_1b_enc', '/Users/icobx/Documents/upb/zadanie2/kryptopy/tkf', '/Users/icobx/Documents/upb/zadanie2/kryptopy/tf_1b_dec')
+#         mode.decrypt_file('1gb_test_enc', 'priv_key', '1gb_test_dec')
 #         end = timeit.default_timer()
 #         time_data.append(end - start)
 #

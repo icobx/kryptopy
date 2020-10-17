@@ -5,7 +5,7 @@ from Crypto import Random
 from Crypto.Util import Counter
 
 from utility.bcolors import bcolors
-from utility.validation import get_filename
+from utility.validation import get_filename, validate_exists_file
 
 
 class _CounterMode:
@@ -16,6 +16,7 @@ class _CounterMode:
         print('test')
 
     def encrypt_file(self, in_filename, key_file, out_filename):
+        validate_exists_file(in_filename)
 
         # generate random 128 bit key
         key = Random.get_random_bytes(16)
@@ -44,7 +45,6 @@ class _CounterMode:
                     chunk = infile.read(chunksize)
                     if len(chunk) == 0:
                         break
-
                     outfile.write(encryptor.encrypt(chunk))
 
                 k_file = get_filename(key_file)
@@ -56,7 +56,6 @@ class _CounterMode:
                         f'{bcolors.BOLD}Decryption {bcolors.OKGREEN}complete'
                         f'{bcolors.ENDC + bcolors.BOLD}. Time elapsed: {end - start} seconds{bcolors.ENDC}'
                     )
-
 
     def decrypt_file(self, in_filename, key_filename, out_filename):
         with open(in_filename, 'rb') as infile:
