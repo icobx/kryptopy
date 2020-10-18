@@ -17,10 +17,10 @@ class _GaloisCounterMode:
         pass
 
 
-    def generate_rsa_key_pair(self, private_keyfile, public_keyfile, pass_phrase=None, size=2048):
+    def generate_rsa_key_pair(self, private_keyfile, public_keyfile, pass_phrase=None):
         # private_keyfile - file where private key will be stored
         # keyfile_pub - file where public key will be stored
-        key = RSA.generate(size)
+        key = RSA.generate(2048)
 
         key_file_priv = get_filename(private_keyfile)
         with open(key_file_priv, 'wb') as priv:
