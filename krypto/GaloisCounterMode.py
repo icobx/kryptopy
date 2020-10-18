@@ -8,7 +8,7 @@ from utility.bcolors import bcolors
 from utility.validation import get_filename, validate_exists_file
 
 
-class _GaloisCounterMode:
+class GaloisCounterMode:
     CHUNK_SIZE = 64 * 1024
     STYLE = bcolors.OKGREEN+bcolors.BOLD
     END_S = bcolors.ENDC
@@ -35,40 +35,41 @@ class _GaloisCounterMode:
               f'| {self.STYLE}{key_file_pub}{bcolors.ENDC}  >')
 
     def encrypt_with_rsa(self, in_filename, public_key, out_filename=None):
-
         with open(public_key, 'rb') as pub:
             pub_key = RSA.import_key(pub.read())
 
             rsa_cipher = PKCS1_OAEP.new(pub_key)
 
-            infile_enc = rsa_cipher.encrypt(in_filename)
-
             if not out_filename:
+                infile_enc = rsa_cipher.encrypt(in_filename)
                 return infile_enc
 
-            outfile_name = get_filename(out_filename)
+            with open(in_filename, 'rb') as infile:
+                infile_enc = rsa_cipher.encrypt(infile.read())
 
-            with open(outfile_name, 'wb') as outfile:
-                outfile.write(infile_enc)
-                print(f'Encrypted message stored in {self.STYLE}{outfile_name}.')
+                outfile_name = get_filename(out_filename)
+                with open(outfile_name, 'wb') as outfile:
+                    outfile.write(infile_enc)
+                    print(f'Encrypted message stored in {self.STYLE}{outfile_name}{bcolors.ENDC}.')
 
     def decrypt_with_rsa(self, in_filename, private_key, out_filename=None):
-
         with open(private_key, 'rb') as priv:
             priv_key = RSA.import_key(priv.read())
 
             rsa_cipher = PKCS1_OAEP.new(priv_key)
 
-            infile_dec = rsa_cipher.decrypt(in_filename)
-
             if not out_filename:
+                infile_dec = rsa_cipher.decrypt(in_filename)
                 return infile_dec
 
-            outfile_name = get_filename(out_filename)
+            with open(in_filename, 'rb') as infile:
+                infile_dec = rsa_cipher.decrypt(infile.read())
 
-            with open(outfile_name, 'wb') as outfile:
-                outfile.write(infile_dec)
-                print(f'Decrypted message stored in {self.STYLE}{outfile_name}.')
+                outfile_name = get_filename(out_filename)
+
+                with open(outfile_name, 'wb') as outfile:
+                    outfile.write(infile_dec)
+                    print(f'Decrypted message stored in {self.STYLE}{outfile_name}{bcolors.ENDC}.')
 
     # out_file format: [ nonce (12) | sym_key_enc (256) | encrypted_data (len(data)) | tag (16) ]
     def encrypt_file(self, in_filename, public_key, out_filename):
@@ -176,7 +177,7 @@ class _GaloisCounterMode:
                 )
 
     # method for tampering with encrypted file
-    def fuck_up_file(self, infile, byte_string=b'\x35', position=268):
-        with open(infile, 'rb+') as file:
-            file.seek(position)
-            file.write(byte_string)
+    # def fuck_up_file(self, infile, byte_string=b'\x35', position=268):
+    #     with open(infile, 'rb+') as file:
+    #         file.seek(position)
+    #         file.write(byte_string)

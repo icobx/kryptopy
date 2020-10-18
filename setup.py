@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='kryptopy',
-    version='0.0.6',
+    version='0.1.0',
     description='Simple tool for file encryption/decryption.',
     long_description=long_description,
     url='https://github.com/icobx/kryptopy',

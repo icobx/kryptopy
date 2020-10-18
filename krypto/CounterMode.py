@@ -8,7 +8,7 @@ from utility.bcolors import bcolors
 from utility.validation import get_filename, validate_exists_file
 
 
-class _CounterMode:
+class CounterMode:
     def __init__(self):
         pass
 
