@@ -2,7 +2,7 @@
 
 **Simple tool for file encryption / decryption.**
 
-Done as an assignment #2 for [I-UPB](https://is.stuba.sk/katalog/syllabus.pl?predmet=282080;lang=en) course (FEI STU).
+Done as an assignment #2 and #3 for [I-UPB](https://is.stuba.sk/katalog/syllabus.pl?predmet=282080;lang=en) course (FEI STU).
 
 
 ## Usage: 
@@ -17,6 +17,7 @@ Done as an assignment #2 for [I-UPB](https://is.stuba.sk/katalog/syllabus.pl?pre
     
 - **Installation**
     - `pip install kryptopy-x-py3-none-any.whl` or `kryptopy-x.tar.gz`
+    - alternatively: `python -m pip install kryptopy-x-py3-none-any.whl` or `kryptopy-x.tar.gz`
     - current version: `x = 0.1.0`
     
     
@@ -42,17 +43,17 @@ Done as an assignment #2 for [I-UPB](https://is.stuba.sk/katalog/syllabus.pl?pre
 
   - To encrypt a file, type `kryptopy {g,a,s} infile keyfile [outfile]` to command line:
     - `infile` is file to be encrypted,
-    - `keyfile` is file with public part of RSA key[^s],
+    - `keyfile` is file with public part of RSA key*,
     - `[outfile]` is file where encrypted data will be stored (optional: if omitted, will be replaced by arbitrary name)
     
-    [^s]: `s` mode does not use RSA, you only need to provide file for randomly generated key
+    *: `s` mode does not use RSA, you only need to provide file for randomly generated key
     
 - To decrypt a file, type `kryptopy {g,a,s} [-d, --decrypt] infile keyfile [outfile]` to command line:
     - `infile` is file to be decrypted,
-    - `keyfile` is file with private part of RSA key[^sd],
+    - `keyfile` is file with private part of RSA key**,
     - `[outfile]` is file where decrypted data will be stored (optional: if omitted, will be replaced by arbitrary name)
 
-    [^sd]: `s` mode does not use RSA, you need to provide file with key you received when encrypting
+    **: `s` mode does not use RSA, you need to provide file with key you received when encrypting
 
  - Help `g -h, --help` of the AES-GCM hybrid mode:
     ```

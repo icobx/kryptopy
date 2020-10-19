@@ -5,7 +5,7 @@ from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto import Random
 
 from utility.bcolors import bcolors
-from utility.validation import get_filename, validate_exists_file
+from utility.validation import get_filename
 
 
 class GaloisCounterMode:
@@ -73,7 +73,7 @@ class GaloisCounterMode:
 
     # out_file format: [ nonce (12) | sym_key_enc (256) | encrypted_data (len(data)) | tag (16) ]
     def encrypt_file(self, in_filename, public_key, out_filename):
-        # create 96 byt nonce for symmetric cipher
+        # create 96 bit nonce for symmetric cipher
         nonce = Random.get_random_bytes(12)
         # create 128 bit key for symmetric cipher
         sym_key = Random.get_random_bytes(16)
@@ -95,7 +95,7 @@ class GaloisCounterMode:
                 start = timeit.default_timer()
 
                 while True:
-                    chunk = infile.read(self.CHUNK_SIZE)
+                    chunk = infile.read(self.CHUNK_SIZE)  # 64 * 1024
                     if len(chunk) == 0:
                         break
                     outfile.write(cipher.encrypt(chunk))
@@ -176,6 +176,7 @@ class GaloisCounterMode:
                     f'{bcolors.ENDC + bcolors.BOLD}. Time elapsed: {end - start} seconds{bcolors.ENDC}'
                 )
 
+    # might be added as user function later :D
     # method for tampering with encrypted file
     # def fuck_up_file(self, infile, byte_string=b'\x35', position=268):
     #     with open(infile, 'rb+') as file:

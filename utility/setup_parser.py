@@ -87,6 +87,13 @@ def setup_parser():
 
     parser = argparse.ArgumentParser(description=description)
 
+    parser.add_argument(
+        '-v', '--version',
+        help='show application version',
+        action='version',
+        version='%(prog)s (version 0.1.0)'
+    )
+
     modes = parser.add_subparsers(title='modes',
                                   help=f'followed by {warning}-h, --help{ends} to show help for given mode',
                                   dest='mode')
