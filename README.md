@@ -7,7 +7,7 @@ Done as an assignment #2 and #3 for [I-UPB](https://is.stuba.sk/katalog/syllabus
 
 ## Usage: 
   - `kryptopy g [-h] [-d] infile keyfile outfile`
-  - `g` stands for GCM mode, there 4 modes available
+  - `g` stands for GCM mode, there are 3 other modes available
 
 ## Getting Started:
 
